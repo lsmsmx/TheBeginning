@@ -3,68 +3,68 @@
 
 using namespace std;
 
-// Функция 1: Ищет нули и возвращает массив индексов строк на удаление
+// Функция: Ищет нули и возвращает массив индексов строк на удаление
 int* findZeroRows(int** arr, int rows, int cols, int* cnt) {
-    // Временный массив меток (0 - ок, 1 - удаляем)
-    int* flag = (int*)calloc(rows, sizeof(int));
     int foundCount = 0;
+    int* tempFlags = (int*)calloc(rows, sizeof(int)); 
 
     for (int i = 0; i < rows; i++) {
+        bool hasZero = false; // Логическая переменная для проверки
         for (int j = 0; j < cols; j++) {
             if (arr[i][j] == 0) {
-                if (flag[i] == 0) {
-                    flag[i] = 1;
-                    foundCount++;
-                }
+                hasZero = true;
                 break; 
             }
+        }
+        if (hasZero) {
+            tempFlags[i] = 1;
+            foundCount++;
         }
     }
 
     if (foundCount == 0) {
-        free(flag);
+        free(tempFlags);
         *cnt = 0;
         return NULL;
     }
 
-    // Создаем одномерный массив с индексами
+    // Создаем итоговый массив индексов
     int* resultIndices = (int*)malloc(foundCount * sizeof(int));
     int curIdx = 0;
     for (int i = 0; i < rows; i++) {
-        if (flag[i] == 1) {
+        if (tempFlags[i] == 1) {
             resultIndices[curIdx] = i;
             curIdx++;
         }
     }
 
-    free(flag);
+    free(tempFlags);
     *cnt = foundCount;
     return resultIndices;
 }
 
-//Функция 2: Печатаем матрицу
+// Вспомогательная функция: Печать матрицы
 void printMatrix(int** arr, int rows, int cols) {
-    if (rows == 0) {
+    if (rows == 0 || arr == NULL) {
         cout << "Матрица пуста." << endl;
         return;
     }
+    cout << "--- Матрица (" << rows << "x" << cols << ") ---" << endl;
     for (int i = 0; i < rows; i++) {
         for (int j = 0; j < cols; j++) {
             cout << arr[i][j] << "\t";
         }
         cout << endl;
     }
-    cout << "-------------------" << endl;
+    cout << "-----------------------" << endl;
 }
-
 // _____ main _____
 int main() {
     setlocale(LC_ALL, "ru_RU.UTF-8");
-    
-    // ================= ПУНКТ 1 =================
-    cout << "=== ПУНКТ 1 ===" << endl;
 
-    // 1. Создаем начальную матрицу 2x2
+    // ================= ПУНКТ 1 =================
+    
+    // 1. Создаем начальную матрицу 2x2 (динамически через malloc)
     int rows = 2;
     int cols = 2;
     int** matrix = (int**)malloc(rows * sizeof(int*));
@@ -72,47 +72,63 @@ int main() {
         matrix[i] = (int*)malloc(cols * sizeof(int));
     }
 
-    cout << "Введите 4 числа для матрицы 2x2:" << endl;
-    for (int i = 0; i < rows; i++) {
-        for (int j = 0; j < cols; j++) {
-            cin >> matrix[i][j];
-        }
-    }
+    cout << "Заполните матрицу 2x2." << endl;
 
-    int A, B, C, D;
+    // Ввод A (matrix[0][0]) с проверкой
     while (true) {
-        cout << "Введите A (строк сверху) и B (столбцов слева): " << endl;
-        cin >> A >> B;
-        if (A >= 0 && B >= 0) break;
-        cout << "Ошибка!" << endl;
+        cout << "Введите A: ";
+        cin >> matrix[0][0];
+        if (matrix[0][0] >= 0) break;
+        cout << "Ошибка! A должно быть неотрицательным." << endl;
     }
-    cout << "Введите коэффициенты C и D: " << endl;
-    cin >> C >> D;
 
+    // Ввод B (matrix[0][1]) с проверкой
+    while (true) {
+        cout << "Введите B: ";
+        cin >> matrix[0][1];
+        if (matrix[0][1] >= 0) break;
+        cout << "Ошибка! B должно быть неотрицательным." << endl;
+    }
+
+    cout << "Введите C: ";
+    cin >> matrix[1][0];
+    cout << "Введите D: ";
+    cin >> matrix[1][1];
+
+    // Теперь извлекаем значения для расчетов прямо из матрицы
+    int A = matrix[0][0];
+    int B = matrix[0][1];
+    int C = matrix[1][0];
+    int D = matrix[1][1];
+
+    cout << "\nИсходная матрица:" << endl;
+    printMatrix(matrix, rows, cols);
+
+    // === ПРЕОБРАЗОВАНИЕ МАТРИЦЫ ===
     int newRows = rows + A;
     int newCols = cols + B;
 
-    // Шаг 1: Увеличиваем массив указателей на строки
+    // 1. Увеличиваем массив указателей строк
     matrix = (int**)realloc(matrix, newRows * sizeof(int*));
 
-    // Шаг 2: Сдвигаем старые указатели ВНИЗ (освобождаем место сверху)
+    // 2. Сдвигаем СТАРЫЕ строки вниз (освобождаем место для A строк сверху)
+    // Идем с конца, чтобы не перезаписать данные
     if (A > 0) {
         for (int i = rows - 1; i >= 0; i--) {
-            matrix[i + A] = matrix[i]; 
+            matrix[i + A] = matrix[i];
         }
     }
 
-    // Шаг 3: Выделяем память под НОВЫЕ строки (те, что сверху)
+    // 3. Выделяем память для НОВЫХ строк сверху
     for (int i = 0; i < A; i++) {
         matrix[i] = (int*)malloc(newCols * sizeof(int));
     }
 
-    // Шаг 4: Расширяем СТАРЫЕ строки (теперь они внизу)
+    // 4. Расширяем СТАРЫЕ строки (которые теперь внизу) и сдвигаем данные вправо
     for (int i = A; i < newRows; i++) {
-        // Расширяем строку
+        // Сначала расширяем память строки
         matrix[i] = (int*)realloc(matrix[i], newCols * sizeof(int));
-        
-        // Сдвигаем числа ВПРАВО (освобождаем место слева)
+        // Сдвигаем старые 2 значения вправо (освобождаем B столбцов слева)
         if (B > 0) {
             for (int j = cols - 1; j >= 0; j--) {
                 matrix[i][j + B] = matrix[i][j];
@@ -120,54 +136,58 @@ int main() {
         }
     }
 
-    // Шаг 5: Заполняем пустые места по формуле
+    // 5. Заполняем освободившиеся места формулой (0*C + 0*D и т.д.)
     for (int i = 0; i < newRows; i++) {
         for (int j = 0; j < newCols; j++) {
+            // Если мы в "новой" зоне (верхние строки ИЛИ левые столбцы)
             if (i < A || j < B) {
                 matrix[i][j] = i * C + j * D;
             }
+            // Иначе (если i >= A и j >= B) - там лежат наши старые числа, их не трогаем
         }
     }
 
-    // Обновляем переменные размера
+    // Обновляем глобальные размеры
     rows = newRows;
     cols = newCols;
 
-    cout << "\nРасширенная матрица:" << endl;
+    cout << "Расширенная матрица:" << endl;
     printMatrix(matrix, rows, cols);
 
-    // ЭТАП УДАЛЕНИЯ (Сжатие массива)
-    int zerosCount = 0;
-    int* rowsToDel = findZeroRows(matrix, rows, cols, &zerosCount);
+    // === УДАЛЕНИЕ СТРОК С НУЛЯМИ ===
 
-    if (zerosCount > 0) {
+    // 1. Передать матрицу в функцию
+    int countToDelete = 0;
+    // 2. Получить массив индексов
+    int* indicesToDelete = findZeroRows(matrix, rows, cols, &countToDelete);
+
+    if (countToDelete > 0) {
+        // 3. Удалить соответствующие строки
+        // Используем метод двух указателей для сжатия массива
+        int writeIdx = 0; 
         
-        int wIdx = 0; // Куда записываем хорошую строку
-        
-        for (int rIdx = 0; rIdx < rows; rIdx++) {
-            // Проверяем, есть ли rIdx в списке на удаление
-            bool shouldDelete = false;
-            for (int k = 0; k < zerosCount; k++) {
-                if (rowsToDel[k] == rIdx) {
-                    shouldDelete = true;
+        for (int readIdx = 0; readIdx < rows; readIdx++) {
+            bool toDelete = false;
+            // Проверяем, есть ли текущий индекс в списке на удаление
+            for (int k = 0; k < countToDelete; k++) {
+                if (indicesToDelete[k] == readIdx) {
+                    toDelete = true;
                     break;
                 }
             }
 
-            if (shouldDelete) {
-                // Если строка плохая - освобождаем её память
-                free(matrix[rIdx]);
+            if (toDelete) {
+                free(matrix[readIdx]); // Освобождаем память строки
             } else {
-                // Если строка хорошая - переносим указатель на позицию wIdx
-                if (wIdx != rIdx) {
-                    matrix[wIdx] = matrix[rIdx];
+                if (writeIdx != readIdx) {
+                    matrix[writeIdx] = matrix[readIdx]; // Перемещаем указатель
                 }
-                wIdx++;
+                writeIdx++;
             }
         }
 
-        // Уменьшаем основной массив указателей
-        rows = wIdx; // Новый размер
+        // Обновляем размер массива указателей
+        rows = writeIdx;
         if (rows > 0) {
             matrix = (int**)realloc(matrix, rows * sizeof(int*));
         } else {
@@ -175,38 +195,47 @@ int main() {
             matrix = NULL;
         }
         
-        // Массив индексов больше не нужен
-        free(rowsToDel);
+        free(indicesToDelete); // Очищаем массив индексов
     }
 
-    cout << "Матрица после удаления строк:" << endl;
+    // 4. Вывести полученную матрицу
+    cout << "Финальная матрица:" << endl;
     printMatrix(matrix, rows, cols);
 
-    // Очистка оставшейся памяти
-    if (matrix != NULL) {
-        for (int i = 0; i < rows; i++) free(matrix[i]);
+    // Очистка памяти в конце
+    if (matrix) {
+        for (int i = 0; i < rows; i++) {
+            free(matrix[i]);
+        }
         free(matrix);
     }
 
     // ================= ПУНКТ 2 =================
     cout << "\n=== ПУНКТ 2 ===" << endl;
+    cout << "Работа с числами a и b" << endl;
+    // Создать динамические переменные
+    int* ptrA = (int*)malloc(sizeof(int));
+    int* ptrB = (int*)malloc(sizeof(int));
 
-    int* ptrA = new int;
-    int* ptrB = new int;
+    if (ptrA && ptrB) {
+        cout << "Введите число a: ";
+        cin >> *ptrA;
+        cout << "Введите число b: ";
+        cin >> *ptrB;
 
-    cout << "Введите два целых числа (a и b): " << endl;
-    cin >> *ptrA >> *ptrB;
+        // Увеличить a в 2 раза
+        *ptrA = (*ptrA) * 2;
 
-    *ptrA = (*ptrA) * 2;
+        // Поменять местами значения
+        int temp = *ptrA;
+        *ptrA = *ptrB;
+        *ptrB = temp;
 
-    int temp = *ptrA;
-    *ptrA = *ptrB;
-    *ptrB = temp;
-
-    cout << "После обмена: a = " << *ptrA << ", b = " << *ptrB << endl;
-
-    delete ptrA;
-    delete ptrB;
+        cout << "Результат: a = " << *ptrA << ", b = " << *ptrB << endl;
+        
+        free(ptrA);
+        free(ptrB);
+    }
 
     return 0;
 }
