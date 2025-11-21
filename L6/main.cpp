@@ -42,6 +42,7 @@ int* findZeroRows(int** arr, int rows, int cols, int* cnt) {
     return resultIndices;
 }
 
+//Функция 2: Печатаем матрицу
 void printMatrix(int** arr, int rows, int cols) {
     if (rows == 0) {
         cout << "Матрица пуста." << endl;
@@ -56,6 +57,7 @@ void printMatrix(int** arr, int rows, int cols) {
     cout << "-------------------" << endl;
 }
 
+// _____ main _____
 int main() {
     setlocale(LC_ALL, "ru_RU.UTF-8");
     
@@ -121,11 +123,9 @@ int main() {
     // Шаг 5: Заполняем пустые места по формуле
     for (int i = 0; i < newRows; i++) {
         for (int j = 0; j < newCols; j++) {
-            // Если это "новая" зона (верхние строки ИЛИ левые столбцы)
             if (i < A || j < B) {
                 matrix[i][j] = i * C + j * D;
             }
-            // Иначе там уже лежат старые данные, их не трогаем
         }
     }
 
@@ -141,8 +141,6 @@ int main() {
     int* rowsToDel = findZeroRows(matrix, rows, cols, &zerosCount);
 
     if (zerosCount > 0) {
-        // Нам нужно удалить строки "на месте".
-        // Мы будем сдвигать "живые" строки вверх, затирая "мертвые".
         
         int wIdx = 0; // Куда записываем хорошую строку
         
