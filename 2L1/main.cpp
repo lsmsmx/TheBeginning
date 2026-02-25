@@ -8,60 +8,71 @@ private:
     string name;
     string capital;
     string foundationDate;
-    double area;       // Площадь
-    long population;   // Население
+    double area;
+    long population;
 
 public:
     // 1. Конструктор по умолчанию
-    Country() : name("Unknown"), capital("None"), foundationDate("01.01.1900"), area(0.0), population(0) {}
+    Country() {
+        name = "Unknown";
+        capital = "None";
+        foundationDate = "01.01.1900";
+        area = 0.0;
+        population = 0;
+    }
 
-    // 2. Конструктор полного заполнения (с параметрами)
+    // 2. Конструктор полного заполнения
     Country(string n, string c, string date, double a, long p) {
         name = n;
         capital = c;
-        foundationDate = date;
-        setArea(a); // Используем сеттер для проверки
+        foundationDate = "01.01.1900"; 
+        area = 0;
+        population = 0;
+        setFoundationDate(date); 
+        setArea(a);              
         setPopulation(p);
     }
 
-    // 3. Конструктор копирования
-    Country(const Country& other) 
-        : name(other.name), capital(other.capital), foundationDate(other.foundationDate), 
-          area(other.area), population(other.population) {}
+    // 3. Конструктор копирования (ОБЯЗАТЕЛЬНО ТЕСТИРУЕМ)
+    Country(const Country& other) {
+        name = other.name + " (Copy)";
+        capital = other.capital;
+        foundationDate = other.foundationDate;
+        area = other.area;
+        population = other.population;
+        cout << "[LOG] Copy constructor called for: " << name << endl;
+    }
 
-    // Деструктор (обязателен вывод сообщения)
+    // Деструктор
     ~Country() {
         cout << "Destructor called for country: " << name << endl;
     }
 
-    //  Геттеры 
+    // --- Геттеры ---
     string getName() const { return name; }
     string getCapital() const { return capital; }
     string getFoundationDate() const { return foundationDate; }
-    double getArea() const { return area; }
+    double getArea() const { return area; } 
     long getPopulation() const { return population; }
 
-    // --- Сеттеры с проверками ---
+    // --- Сеттеры ---
     void setName(string n) { name = n; }
-    
-    // Сеттер столицы
     void setCapital(const string& c) { capital = c; }
 
     void setFoundationDate(string date) {
-        // Проверка: длина должна быть 10 (например "01.01.2000")
-        // И символы на позициях 2 и 5 должны быть точками
         if (date.length() == 10 && date[2] == '.' && date[5] == '.') {
             foundationDate = date;
         } else {
-            cout << "Ошибка: Неверный формат даты! Используйте ДД.ММ.ГГГГ" << endl;
-            // Можно задать значение по умолчанию, чтобы поле не было пустым
-            foundationDate = "01.01.1900"; 
+            cout << "Error: Invalid date format!" << endl;
         }
     }
 
     void setArea(double a) {
-        if (a >= 0) area = a;
-        else cout << "Error: Area cannot be negative!" << endl;
+        if (a >= 0) {
+            area = a;
+        } else {
+            cout << "Error: Area cannot be negative!" << endl;
+        }
     }
 
     void setPopulation(long p) {
@@ -69,8 +80,7 @@ public:
         else cout << "Error: Population cannot be negative!" << endl;
     }
 
-
-    // Вывод всей информации
+    // Вывод всей информации (как в задании)
     void printInfo() const {
         cout << "--- Country Info ---" << endl;
         cout << "Name: " << name << endl;
@@ -81,7 +91,7 @@ public:
         cout << "--------------------" << endl;
     }
 
-    // Присоединение новой территории (параметр есть)
+    // Присоединение территории (как на скриншоте 1)
     void addTerritory(double newArea) {
         if (newArea > 0) {
             area += newArea;
@@ -89,37 +99,45 @@ public:
         }
     }
 
-    // Рост населения (параметров нет, просто логика роста)
+    // Рост населения (как на скриншоте 1)
     void populationGrowth() {
-        long growth = population * 0.05;
+        long growth = (long)(population * 0.05); // допустим, рост 5%
         population += growth;
         cout << "Population grew by " << growth << ". Total: " << population << endl;
     }
 };
 
 int main() {
+    // 1. Тест конструктора по умолчанию и сеттеров
+    cout << "--- TEST 1: Default Constructor & Setters ---" << endl;
+    Country country1;
+    country1.setName("Atlantis");
+    country1.setCapital("None");
+    country1.setArea(500);
+    country1.printInfo();
 
-    // Тест конструктора с параметрами
-    Country russia("Russia", "Moscow", "862", 17098246, 144100000);
-    russia.printInfo();
+    // 2. Тест конструктора со всеми параметрами
+    cout << "\n--- TEST 2: Parameterized Constructor ---" << endl;
+    Country country2("Russia", "Moscow", "01.01.0862", 17098246, 144100000);
+    country2.printInfo();
 
-    // Тест конструктора копирования
-    Country russiaCopy = russia;
-    russiaCopy.setName("Russia (Copy)"); // Меняем имя, чтобы отличить при удалении
+    // 3. ТЕСТ КОНСТРУКТОРА КОПИРОВАНИЯ (Этого не было в твоем main!)
+    cout << "\n--- TEST 3: Copy Constructor ---" << endl;
+    Country country3 = country2; 
+    country3.printInfo();
+
+    // 4. ТЕСТ МЕТОДОВ (Присоединение и рост)
+    cout << "\n--- TEST 4: Methods (Territory & Growth) ---" << endl;
+    country2.addTerritory(50000);
+    country2.populationGrowth();
+
+    // 5. ТЕСТ ГЕТТЕРОВ И ВАЛИДАЦИИ
+    cout << "\n--- TEST 5: Getters & Validation ---" << endl;
+    cout << "Getting capital via getter: " << country2.getCapital() << endl;
     
-    // Тест конструктора по умолчанию
-    Country emptyCountry;
-    emptyCountry.setName("Atlantis");
-    emptyCountry.setArea(500);
-    emptyCountry.printInfo();
+    cout << "Trying to set negative area:" << endl;
+    country2.setArea(-100); // Ожидаем ошибку
 
-    // Проверка методов
-    russia.addTerritory(50000); // Присоединение территории
-    russia.populationGrowth();  // Рост населения
-
-    // Проверка валидации
-    russia.setArea(-100); // Ошибка
-
-    
+    cout << "\n--- End of program, destructors will follow ---" << endl;
     return 0;
 }

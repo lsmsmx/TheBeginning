@@ -1,4 +1,5 @@
 #include "Country.h"
+#include <cstdlib> 
 
 void Country::addCitySafe(vector<string>& target, const string& city) {
     bool exists = false; // Флаг: нашли ли мы такой же город?
@@ -106,22 +107,31 @@ Country Country::operator+(const Country& other) const {
 
 // --- Оператор СЛОЖЕНИЯ С ПРИСВАИВАНИЕМ (+=) ---
 Country& Country::operator+=(const Country& other) {
-    // Используем уже готовую логику оператора + и оператора присваивания (=) Это избавляет от дублирования кода
-    *this = *this + other; 
-    return *this; // Возвращаем ссылку на самого себя
+    // 1. Обновляем название напрямую
+    this->name = this->name + "-" + other.name;
+    
+    // 2. Обновляем столицу (если площадь other больше или равна, забираем её столицу)
+    if (other.area >= this->area) {
+        this->capital = other.capital;
+    }
+
+    // 3. Прибавляем площадь
+    this->area += other.area;
+
+    // 4. Добавляем города из второй страны
+    for (const auto& city : other.cities) {
+        this->addCitySafe(this->cities, city);
+    }
+
+    return *this;
 }
 
 // --- Оператор УМНОЖЕНИЯ (*) ---
-// По заданию: "путь Имя1->Имя2", Столица "нет", Минимальная площадь
 Country Country::operator*(const Country& other) const {
-    // 1. Формируем название-путь по шаблону из таблицы
     string newName = "путь " + this->name + "->" + other.name;
-    // 2. Столица по условию варианта всегда "нет"
     string newCapital = "нет";
-    // 3. Выбираем меньшую площадь из двух объектов (тернарный оператор)
     double newArea = (this->area < other.area) ? this->area : other.area;
 
-    // 4. Формируем новый список городов (две столицы + по одному городу)
     vector<string> newCities;
     
     // Добавляем столицу первой страны
@@ -131,18 +141,22 @@ Country Country::operator*(const Country& other) const {
     if (other.capital == this->capital) newCities.push_back(other.capital + " новый");
     else newCities.push_back(other.capital);
 
-    // Добавляем по одному первому городу из каждой страны (если списки не пусты)
+    // Добавляем ЛЮБОЙ случайный город из первой страны
     if (!this->cities.empty()) {
-        string c = this->cities[0];
-        // Проверяем на совпадение с уже добавленными столицами (newCities[0] и [1])
+        // Выбираем случайный индекс от 0 до размера вектора - 1
+        int randomIndex = rand() % this->cities.size();
+        string c = this->cities[randomIndex]; 
+        
         bool exists = (c == newCities[0] || c == newCities[1]);
         if (exists) newCities.push_back(c + " новый");
         else newCities.push_back(c);
     }
 
+    // Добавляем ЛЮБОЙ случайный город из второй страны
     if (!other.cities.empty()) {
-        string c = other.cities[0];
-        // Полная проверка на дубликаты по всему текущему вектору newCities
+        int randomIndex = rand() % other.cities.size();
+        string c = other.cities[randomIndex];
+        
         bool exists = false;
         for(const auto& existing : newCities) {
             if(existing == c) { exists = true; break; }

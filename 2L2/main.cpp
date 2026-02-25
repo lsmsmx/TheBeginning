@@ -1,10 +1,12 @@
 #include <iostream>
 #include "Country.h"
+#include <ctime>
+#include <cstdlib>
 
 using namespace std;
 
 int main() {
-
+    srand(time(NULL));
     // Создаем вектора городов
     vector<string> citiesA = {"Minsk", "Gomel", "Brest"};
     vector<string> citiesB = {"Berlin", "Minsk", "Hamburg"}; // Минск повторяется
